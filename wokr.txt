@@ -1,0 +1,20 @@
+1.
+learn about db in general רלציוני - like mysql, postgress etc. maybe a good video in youtube'
+2.
+learn more in depth about relationship between tables in db, foreign, main key etc (one to many, many to many ...) 
+3.
+familarize yourself with sql - you will need it soon.
+
+
+
+4. 
+in client, start working on login page . (tkinter, pyQT, maybe something else, you can decide yourself)
+, for start, just accept everything in the server and let any username connect.
+
+5. after login, show other screen, with compartment for chats and for messages (if chat is not selected there are no messages) 
+ , add button to create chat with single user that sends the server your username, the other participant username, and a request to create a private chat
+
+6.
+learn steps 1 - 3, and implement db in your server, start with the users table, and continue with the others. in this step you need to implement proper
+login that does check in the db for username and password. (you may need to create a sign up screen to create new users - and put the in the users table !!)
+and use the request from step 5, to create a new chat with 2 participants
