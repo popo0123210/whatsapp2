@@ -1,7 +1,7 @@
 1.
 learn about db in general רלציוני - like mysql, postgress etc. maybe a good video in youtube'
 2.
-learn more in depth about relationship between tables in db, foreign, main key etc (one to many, many to many ...) 
+learn more in depth about relationship between tables in db, | foreign, main key etc (one to many, many to many ...) 
 3.
 familarize yourself with sql - you will need it soon.
 
