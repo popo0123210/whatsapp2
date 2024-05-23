@@ -13,6 +13,10 @@ def handle_client(client_socket, addr):
 
             print(f"Received: {request}")
             response = "accepted"
+
+            #need get command id function
+            #then if (command = x){
+            #do something
             client_socket.send(response.encode("utf-8"))
     except Exception as e:
         print(f"Error when hanlding client: {e}")
