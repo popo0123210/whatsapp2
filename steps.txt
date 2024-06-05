@@ -1,0 +1,8 @@
+where the project is right now
+in db there are the basic methods, need to add the other ones too,
+follow the guide you did back then
+for example: get rooms
+get users
+get messages in room
+
+get user by name
