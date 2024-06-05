@@ -79,16 +79,16 @@ def add_room(conn, room):
     sql = ''' INSERT INTO room(name)
               VALUES(?,?) '''
     cur = conn.cursor()
-    cur.execute(sql, user)
+    cur.execute(sql, room)
     conn.commit()
 
     return cur.lastrowid
 
-def add_message(conn, meesage):
+def add_message(conn, message):
     sql = '''INSERT INTO message(text,date,sender,room)
              VALUES(?,?,?,?) '''
     cur = conn.cursor()
-    cur.execute(sql, task)
+    cur.execute(sql, message)
     conn.commit()
     return cur.lastrowid
 
@@ -96,7 +96,7 @@ def add_message(conn, users_rooms):
     sql = '''INSERT INTO message(text,date,sender,room)
              VALUES(?,?,?,?) '''
     cur = conn.cursor()
-    cur.execute(sql, task)
+    cur.execute(sql, users_rooms)
     conn.commit()
     return cur.lastrowid
 
