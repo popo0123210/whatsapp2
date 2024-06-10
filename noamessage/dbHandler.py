@@ -1,25 +1,4 @@
-# def create table
-# def signnewUser
-# def check if user exists - for login
-# def new group
-# def add user to group
-# def new message
-
 import sqlite3
-
-
-# def create_sqlite_database(filename):
-#     """ create a database connection to an SQLite database """
-#     conn = None
-#     try:
-#         conn = sqlite3.connect(filename)
-#         print(sqlite3.sqlite_version)
-#     except sqlite3.Error as e:
-#         print(e)
-#     finally:
-#         if conn:
-#             conn.close()
-
 
 def create_tables():
     sql_statements = [
@@ -33,7 +12,7 @@ def create_tables():
         CREATE TABLE IF NOT EXISTS message (
           id INTEGER PRIMARY KEY,
           text text NOT NULL,
-          date date,
+          date DATE DEFAULT (datetime('now','localtime')),
           sender INT NOT NULL,
           room INT NOT NULL,
           FOREIGN KEY (sender) REFERENCES user (id),
@@ -53,7 +32,6 @@ def create_tables():
         );"""
     ]
 
-    # create a database connection
     try:
         with sqlite3.connect('my.db') as conn:
             cursor = conn.cursor()
@@ -64,16 +42,13 @@ def create_tables():
     except sqlite3.Error as e:
         print(e)
 
-
 def add_user(conn, user):
     sql = ''' INSERT INTO user(username,password)
               VALUES(?,?) '''
     cur = conn.cursor()
     cur.execute(sql, user)
     conn.commit()
-
     return cur.lastrowid
-
 
 def add_room(conn, room):
     sql = ''' INSERT INTO room(name)
@@ -81,9 +56,7 @@ def add_room(conn, room):
     cur = conn.cursor()
     cur.execute(sql, room)
     conn.commit()
-
     return cur.lastrowid
-
 
 def add_message(conn, message):
     sql = '''INSERT INTO message(text,date,sender,room)
@@ -92,3 +65,14 @@ def add_message(conn, message):
     cur.execute(sql, message)
     conn.commit()
     return cur.lastrowid
+
+def get_messages_for_room(conn, room_id):
+    sql = '''SELECT u.username, m.text, m.date
+             FROM message m
+             JOIN user u ON m.sender = u.id
+             WHERE m.room = ?
+             ORDER BY m.date ASC'''
+    cur = conn.cursor()
+    cur.execute(sql, (room_id,))
+    rows = cur.fetchall()
+    return rows
