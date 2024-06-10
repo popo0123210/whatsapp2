@@ -13,7 +13,7 @@ def run_client():
             # in the server there will be commands, that will help you
             # determine what the action is and how to handle it
             new_user = '{"commandID": 2, "new_username": "username123", "password": "password123"}'
-            msg = '{"id": 2, "name": "abc"}'
+            msg = input("enter shit: ")
             client.send(msg.encode("utf-8")[:1024])
 
             response = client.recv(1024)
