@@ -43,10 +43,16 @@ def handle_client(client_socket, addr):
                     print("FETCH_MESSAGES command")
                     group_id = args[0]
                     messages = get_messages_for_room(conn, group_id)
+                    # user, text, date = messages[0]
+                    # response = f"{username}: {text} ({date})"
+                    # client_socket.sendall(response.encode())
+
                     if messages:
                         response = '\n'.join(
                             [f"{username}: {text} ({date})" if date else f"{username}: {text}" for username, text, date
                              in messages])
+                        client_socket.sendall(response.encode())
+                        client_socket.sendall("OVER".encode())
                     else:
                         response = "no messages for this room id"
                 elif command == "GET_GROUPS":

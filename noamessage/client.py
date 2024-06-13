@@ -135,11 +135,11 @@ class ChatClient:
 
         self.client_socket.send(f"FETCH_MESSAGES {group_id} {self.user_id}".encode('utf-8'))
 
-        messages = "empty"
+        messages = ""
         print(messages)
         while True:
-            chunk = self.client_socket.recv(4096).decode('utf-8')
-            if chunk == "" or not chunk:
+            chunk = self.client_socket.recv(1024).decode('utf-8')
+            if chunk == "" or not chunk or chunk == "OVER":
                 break
             print(chunk)
 
@@ -151,6 +151,12 @@ class ChatClient:
         self.chat_area.insert(tk.END, messages + "\n")
         self.chat_area.config(state='disabled')
         self.chat_area.yview(tk.END)
+        # self.client_socket.send(f"FETCH_MESSAGES {group_id} {self.user_id}".encode('utf-8'))
+        # messages = self.client_socket.recv(4096).decode('utf-8')
+        # self.chat_area.config(state='normal')
+        # self.chat_area.insert(tk.END, messages + "\n")
+        # self.chat_area.config(state='disabled')
+        # self.chat_area.yview(tk.END)
 
     def create_group(self):
         group_name = simpledialog.askstring("Create Group", "Enter group name:")
