@@ -5,22 +5,22 @@ def create_tables():
         """
         CREATE TABLE IF NOT EXISTS user (
         id INTEGER PRIMARY KEY,
-        username text NOT NULL,
-        password text NOT NULL
+        username TEXT NOT NULL,
+        password TEXT NOT NULL
         );""",
         """
         CREATE TABLE IF NOT EXISTS message (
           id INTEGER PRIMARY KEY,
-          text text NOT NULL,
-          date DATE DEFAULT (datetime('now','localtime')),
-          sender INT NOT NULL,
-          room INT NOT NULL,
+          text TEXT NOT NULL,
+          date DATETIME DEFAULT CURRENT_TIMESTAMP,
+          sender INTEGER NOT NULL,
+          room INTEGER NOT NULL,
           FOREIGN KEY (sender) REFERENCES user (id),
           FOREIGN KEY (room) REFERENCES room (id)
         );""",
         """CREATE TABLE IF NOT EXISTS room (
           id INTEGER PRIMARY KEY,
-          name text NOT NULL
+          name TEXT NOT NULL
         );""",
         """
         CREATE TABLE IF NOT EXISTS users_rooms (
@@ -37,7 +37,6 @@ def create_tables():
             cursor = conn.cursor()
             for statement in sql_statements:
                 cursor.execute(statement)
-
             conn.commit()
     except sqlite3.Error as e:
         print(e)
@@ -52,11 +51,18 @@ def add_user(conn, user):
 
 def add_room(conn, room):
     sql = ''' INSERT INTO room(name)
-              VALUES(?,?) '''
+              VALUES(?) '''
     cur = conn.cursor()
     cur.execute(sql, room)
     conn.commit()
     return cur.lastrowid
+
+def add_user_to_room(conn, user_id, room_id):
+    sql = ''' INSERT INTO users_rooms(user_id, room_id)
+              VALUES(?,?) '''
+    cur = conn.cursor()
+    cur.execute(sql, (user_id, room_id))
+    conn.commit()
 
 def add_message(conn, message):
     sql = '''INSERT INTO message(text,date,sender,room)
@@ -76,3 +82,24 @@ def get_messages_for_room(conn, room_id):
     cur.execute(sql, (room_id,))
     rows = cur.fetchall()
     return rows
+
+def get_groups_for_user(conn, user_id):
+    sql = '''SELECT r.id, r.name 
+             FROM room r
+             JOIN users_rooms ur ON ur.room_id = r.id
+             WHERE ur.user_id = ?'''
+    cur = conn.cursor()
+    cur.execute(sql, (user_id,))
+    rows = cur.fetchall()
+    return rows
+
+def authenticate_user(conn, username, password):
+    print(f"Authenticating user: {username} / {password}")  # Debug print
+    sql = "SELECT id FROM user WHERE username=? AND password=?"
+    cur = conn.cursor()
+    cur.execute(sql, (username, password))
+    user = cur.fetchone()
+    if user:
+        return user[0]  # Return user ID
+    else:
+        return None
