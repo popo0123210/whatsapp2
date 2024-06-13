@@ -22,22 +22,29 @@ def handle_client(client_socket, addr):
             if request:
                 command, *args = request.split(' ')
                 if command == "LOGIN":
+                    print("login command recieved")
                     username, password = args
                     # Add authentication logic here
                     response = "Login successful"
                 elif command == "REGISTER":
+                    print("register command recieved")
                     username, password = args
                     user_id = add_user(conn, (username, password))
                     response = f"User {username} registered with id {user_id}"
                 elif command == "CREATE_CHAT":
+                    print("create chat command recieved")
                     chat_name = args[0]
                     room_id = add_room(conn, (chat_name,))
                     response = f"Chat {chat_name} created with id {room_id}"
                 elif command == "SEND_MESSAGE":
+                    print("send message command recieved")
                     chat_id, user_id, message = args
                     message_id = add_message(conn, (message, None, user_id, chat_id))
                     response = f"Message sent with id {message_id}"
                 elif command == "FETCH_MESSAGES":
+                    print(
+                        "fetch messages command recieved"
+                    )
                     chat_id = args[0]
                     messages = get_messages_for_room(conn, chat_id)
                     response = '\n'.join([f"{username}: {text} ({date})" for username, text, date in messages])
