@@ -3,13 +3,12 @@ import threading
 import tkinter as tk
 from tkinter import scrolledtext, messagebox, simpledialog, ttk
 
-
 class ChatClient:
     def __init__(self, master):
         self.master = master
         self.master.title("Chat Client")
 
-        # Connection to server
+        # חיבור לשרת
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
             self.client_socket.connect(("localhost", 8000))
@@ -18,20 +17,20 @@ class ChatClient:
             self.master.quit()
             return
 
-        # Setting up the GUI
+        # סטאפ לגוי
         self.setup_gui()
 
-        # Initial registration or login
+        # רישום או כניסה ראשונית
         self.register_or_login()
 
-        # Thread for receiving messages
+        # תראד לקבלת הודעות כל הזמן שפןעלת התוכנה
         self.receive_thread = threading.Thread(target=self.receive_messages)
         self.receive_thread.daemon = True
         self.receive_thread.start()
 
     def setup_gui(self):
         self.master.geometry("800x600")
-        self.master.configure(bg="#2b3e50")
+        self.master.configure(bg="#b0ec93")
 
         self.tab_control = ttk.Notebook(self.master)
 
@@ -46,25 +45,25 @@ class ChatClient:
         self.tab_control.add(self.contacts_frame, text="Contacts")
         self.tab_control.pack(expand=1, fill="both")
 
-        # Chat frame
-        self.chat_label = tk.Label(self.chat_frame, text="Chat:", bg="#2b3e50", fg="white", font=("Arial", 14))
+        # צאט
+        self.chat_label = tk.Label(self.chat_frame, text="Chat:", bg="#b0ec93", fg="white", font=("Arial", 14))
         self.chat_label.pack()
 
-        self.chat_area = scrolledtext.ScrolledText(self.chat_frame, wrap=tk.WORD, state='disabled', bg="#4a6a80",
+        self.chat_area = scrolledtext.ScrolledText(self.chat_frame, wrap=tk.WORD, state='disabled', bg="#c4e5c8",
                                                    fg="white")
         self.chat_area.pack(padx=20, pady=5)
 
-        self.msg_label = tk.Label(self.chat_frame, text="Enter message:", bg="#2b3e50", fg="white", font=("Arial", 12))
+        self.msg_label = tk.Label(self.chat_frame, text="Enter message:", bg="#5fd36d", fg="white", font=("Arial", 12))
         self.msg_label.pack()
 
-        self.msg_entry = tk.Entry(self.chat_frame, width=50, bg="#4a6a80", fg="white")
+        self.msg_entry = tk.Entry(self.chat_frame, width=50, bg="#9ec6a3", fg="white")
         self.msg_entry.pack(padx=20, pady=5)
 
-        self.send_button = tk.Button(self.chat_frame, text="Send", command=self.send_message, bg="#3b4f63", fg="white",
+        self.send_button = tk.Button(self.chat_frame, text="Send", command=self.send_message, bg="#23b834", fg="white",
                                      font=("Arial", 12))
         self.send_button.pack(pady=5)
 
-        # Groups frame
+        # קבוצות
         self.group_label = tk.Label(self.groups_frame, text="Groups:", bg="#2b3e50", fg="white", font=("Arial", 14))
         self.group_label.pack()
 
@@ -142,7 +141,7 @@ class ChatClient:
     def register(self):
         self.username = simpledialog.askstring("Username", "Enter your username")
         self.password = simpledialog.askstring("Password", "Enter your password", show='*')
-        self.client_socket.send(f"REGISTER {self.username} {self.password}".encode("utf-8"))
+        self.send_command(f"REGISTER {self.username} {self.password}")
         response = self.client_socket.recv(1024).decode("utf-8")
         messagebox.showinfo("Info", response)
         if "successful" in response:
@@ -153,7 +152,7 @@ class ChatClient:
     def login(self):
         self.username = simpledialog.askstring("Username", "Enter your username")
         self.password = simpledialog.askstring("Password", "Enter your password", show='*')
-        self.client_socket.send(f"LOGIN {self.username} {self.password}".encode("utf-8"))
+        self.send_command(f"LOGIN {self.username} {self.password}")
         response = self.client_socket.recv(1024).decode("utf-8")
         if response.startswith("Login successful"):
             self.user_id = response.split()[2]
@@ -164,7 +163,7 @@ class ChatClient:
             self.master.quit()
 
     def fetch_groups(self):
-        self.client_socket.send(f"GET_GROUPS {self.user_id}".encode("utf-8"))
+        self.send_command(f"GET_GROUPS {self.user_id}")
         response = self.client_socket.recv(1024).decode("utf-8")
         self.group_listbox.delete(0, tk.END)
         for group in response.split('\n'):
@@ -172,7 +171,7 @@ class ChatClient:
                 self.group_listbox.insert(tk.END, group)
 
     def fetch_contacts(self):
-        self.client_socket.send(f"GET_CONTACTS {self.user_id}".encode("utf-8"))
+        self.send_command(f"GET_CONTACTS {self.user_id}")
         response = self.client_socket.recv(1024).decode("utf-8")
         self.contact_listbox.delete(0, tk.END)
         for contact in response.split('\n'):
@@ -188,7 +187,7 @@ class ChatClient:
     def fetch_messages(self):
         if self.current_group:
             group_id = self.current_group.split()[-1].strip("()")
-            self.client_socket.send(f"FETCH_MESSAGES {group_id}".encode("utf-8"))
+            self.send_command(f"FETCH_MESSAGES {group_id}")
             response = self.client_socket.recv(1024).decode("utf-8")
             self.chat_area.config(state='normal')
             self.chat_area.delete(1.0, tk.END)
@@ -200,75 +199,90 @@ class ChatClient:
             group_id = self.current_group.split()[-1].strip("()")
             message = self.msg_entry.get()
             if message:
-                self.client_socket.send(f"SEND_MESSAGE {group_id} {self.user_id} {message}".encode("utf-8"))
+                self.send_command(f"SEND_MESSAGE {group_id} {self.user_id} {message}")
                 self.msg_entry.delete(0, tk.END)
+                self.fetch_messages()
+
+    def send_command(self, command):
+        try:
+            self.client_socket.sendall(command.encode("utf-8"))
+        except socket.error as e:
+            messagebox.showerror("Error", str(e))
+            self.master.quit()
 
     def receive_messages(self):
         while True:
             try:
                 message = self.client_socket.recv(1024).decode("utf-8")
-                self.chat_area.config(state='normal')
-                self.chat_area.insert(tk.END, message + '\n')
-                self.chat_area.config(state='disabled')
-            except Exception as e:
-                messagebox.showerror("Connection Error", str(e))
+                if message:
+                    self.chat_area.config(state='normal')
+                    self.chat_area.insert(tk.END, message + "\n")
+                    self.chat_area.yview(tk.END)
+                    self.chat_area.config(state='disabled')
+            except socket.error as e:
+                messagebox.showerror("Error", str(e))
                 break
 
     def create_group(self):
-        group_name = simpledialog.askstring("Group Name", "Enter group name")
+        group_name = simpledialog.askstring("Group Name", "Enter the group name")
         if group_name:
-            self.client_socket.send(f"CREATE_GROUP {group_name} {self.user_id}".encode("utf-8"))
+            self.send_command(f"CREATE_GROUP {group_name} {self.user_id}")
+            response = self.client_socket.recv(1024).decode("utf-8")
+            messagebox.showinfo("Info", response)
             self.fetch_groups()
 
     def join_group(self):
-        group_name = simpledialog.askstring("Group Name", "Enter group name to join")
+        group_name = simpledialog.askstring("Group Name", "Enter the group name to join")
         if group_name:
-            self.client_socket.send(f"JOIN_GROUP {group_name} {self.user_id}".encode("utf-8"))
+            self.send_command(f"JOIN_GROUP {group_name} {self.user_id}")
+            response = self.client_socket.recv(1024).decode("utf-8")
+            messagebox.showinfo("Info", response)
             self.fetch_groups()
 
     def add_user_to_group(self):
-        group_id = simpledialog.askstring("Group ID", "Enter group ID to add user to")
-        username = simpledialog.askstring("Username", "Enter username to add to the group")
-        if group_id and username:
-            self.client_socket.send(f"ADD_USER_TO_GROUP {group_id} {username}".encode("utf-8"))
-            response = self.client_socket.recv(1024).decode("utf-8")
-            messagebox.showinfo("Info", response)
+        if self.current_group:
+            user_id = simpledialog.askstring("User ID", "Enter the user ID to add to the group")
+            if user_id:
+                group_id = self.current_group.split()[-1].strip("()")
+                self.send_command(f"ADD_USER_TO_GROUP {group_id} {user_id}")
+                response = self.client_socket.recv(1024).decode("utf-8")
+                messagebox.showinfo("Info", response)
 
     def group_info(self):
         if self.current_group:
             group_id = self.current_group.split()[-1].strip("()")
-            self.client_socket.send(f"GROUP_INFO {group_id}".encode("utf-8"))
+            self.send_command(f"GROUP_INFO {group_id}")
             response = self.client_socket.recv(1024).decode("utf-8")
             messagebox.showinfo("Group Info", response)
 
     def update_settings(self):
-        new_username = self.username_entry.get()
-        new_password = self.password_entry.get()
-        if new_username and new_password:
-            self.client_socket.send(f"UPDATE_USER {self.user_id} {new_username} {new_password}".encode("utf-8"))
+        username = self.username_entry.get()
+        password = self.password_entry.get()
+        if username and password:
+            self.send_command(f"UPDATE_SETTINGS {self.user_id} {username} {password}")
             response = self.client_socket.recv(1024).decode("utf-8")
             messagebox.showinfo("Info", response)
             if "successful" in response:
-                self.username = new_username
+                self.username = username
 
     def add_contact(self):
-        contact_username = simpledialog.askstring("Username", "Enter username to add to contacts")
-        if contact_username:
-            self.client_socket.send(f"ADD_CONTACT {self.user_id} {contact_username}".encode("utf-8"))
+        contact_name = simpledialog.askstring("Contact Name", "Enter the contact name")
+        if contact_name:
+            self.send_command(f"ADD_CONTACT {self.user_id} {contact_name}")
+            response = self.client_socket.recv(1024).decode("utf-8")
+            messagebox.showinfo("Info", response)
             self.fetch_contacts()
 
     def remove_contact(self):
-        contact_username = simpledialog.askstring("Username", "Enter username to remove from contacts")
-        if contact_username:
-            self.client_socket.send(f"REMOVE_CONTACT {self.user_id} {contact_username}".encode("utf-8"))
+        selection = self.contact_listbox.curselection()
+        if selection:
+            contact_name = self.contact_listbox.get(selection[0])
+            self.send_command(f"REMOVE_CONTACT {self.user_id} {contact_name}")
+            response = self.client_socket.recv(1024).decode("utf-8")
+            messagebox.showinfo("Info", response)
             self.fetch_contacts()
 
-
-def main():
+if __name__ == "__main__":
     root = tk.Tk()
     client = ChatClient(root)
     root.mainloop()
-
-
-if __name__ == "__main__":
-    main()
