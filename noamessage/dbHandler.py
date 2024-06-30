@@ -18,6 +18,7 @@ def create_tables():
           FOREIGN KEY (sender) REFERENCES user (id),
           FOREIGN KEY (room) REFERENCES room (id)
         );""",
+        #אחד-לרבים: כל משתמש יכול לשלוח הודעות רבות. המפתח הזר sender מתייחס למפתח הראשי בטבלת user.
         """CREATE TABLE IF NOT EXISTS room (
           id INTEGER PRIMARY KEY,
           name TEXT NOT NULL
@@ -30,6 +31,7 @@ def create_tables():
           FOREIGN KEY (room_id) REFERENCES room (id),
           FOREIGN KEY (user_id) REFERENCES user (id)
         );"""
+        #רבים-לרבים: כל משתמש יכול להיות חבר בחדרים רבים, וכל חדר יכול להכיל משתמשים רבים.
     ]
 
     try:
@@ -40,6 +42,7 @@ def create_tables():
             conn.commit()
     except sqlite3.Error as e:
         print(e)
+
 
 def add_user(conn, user):
     sql = ''' INSERT INTO user(username, password)
